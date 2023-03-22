@@ -18,6 +18,30 @@ export const ImageGallery = ({value}) => {
         if (!value) {
             return
         }
+
+        const fetchImages = async (query, currentPage) => {   
+            try {
+                setLoading(true);
+                const resp = await fetchPixabayApi(query, currentPage);
+
+                if (!resp || resp.hits.length === 0) {
+                    setImages([])
+                    setError('Sorry, there are no images matching your search query. Please try again.')
+                    return
+                }
+                
+                setImages(prevState => (page === 1) ? [...resp.hits] : [...prevState, ...resp.hits]);
+                setError(null);
+                setHits(resp.totalHits);
+                }
+                catch (err) {
+                    setError(String(err));
+                }
+                finally {
+                    setLoading(false)
+                }
+        }
+    
         fetchImages(value.trim(), page);
     }, [value, page]);
 
@@ -34,31 +58,9 @@ export const ImageGallery = ({value}) => {
             behavior: "smooth",
         });
         }
-    }, [images]);
+    }, [images, page]);
 
-    const fetchImages = async (query, currentPage) => {   
-        try {
-            setLoading(true);
-            const resp = await fetchPixabayApi(query, currentPage);
 
-            if (!resp || resp.hits.length === 0) {
-                setImages([])
-                setError('Sorry, there are no images matching your search query. Please try again.')
-                return
-            }
-            
-            setImages(prevState => (page === 1) ? [...resp.hits] : [...prevState, ...resp.hits]);
-            setError(null);
-            setHits(resp.totalHits);
-            }
-            catch (err) {
-                setError(String(err));
-            }
-            finally {
-                setLoading(false)
-            }
-        }
-    
 
     const loadMore = () => {
         setPage(prevPage => prevPage + 1)
